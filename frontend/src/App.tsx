@@ -4,6 +4,7 @@ import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import { AuthProvider } from './Providers/AuthProvider';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import EditorPage from './pages/Editor';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Navigate to="/auth" replace />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/editor/:id" element={<ProtectedRoute><EditorPage/></ProtectedRoute>}/>
         </Routes>
       </AuthProvider>
     </Router>
