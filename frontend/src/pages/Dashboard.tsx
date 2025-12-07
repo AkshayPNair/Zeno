@@ -1,45 +1,43 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, FileText, Layout, Kanban, LogOut } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import CreateDocumentModal from '../components/CreateDocumentModal';
 import { useAuth } from '../hooks/useAuth';
-
-// Mock Data for documents
-const documents = [
-    { id: 1, title: 'Project Zeno Roadmap', type: 'editor', date: '2 mins ago' },
-    { id: 2, title: 'Marketing Ideas 2024', type: 'whiteboard', date: '1 day ago' },
-    { id: 3, title: 'Development Sprints', type: 'kanban', date: '3 days ago' },
-    { id: 4, title: 'Client Meeting Notes', type: 'editor', date: '1 week ago' },
-];
+import { useDocuments } from '../hooks/useDocuments';
+import { DocumentType } from '../types/document';
 
 const Dashboard: React.FC = () => {
-    const {logout} = useAuth()
+    const { logout } = useAuth()
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
+    const { documents, loadDocuments } = useDocuments();
 
-    const handleLogout =async () => {
+    useEffect(() => {
+        loadDocuments();
+    }, []);
+
+    const handleLogout = async () => {
         await logout()
-        navigate('/auth',{replace:true});
+        navigate('/auth', { replace: true });
     };
 
     const getIcon = (type: string) => {
         switch (type) {
-            case 'editor': return <FileText size={20} />;
-            case 'whiteboard': return <Layout size={20} />;
-            case 'kanban': return <Kanban size={20} />;
+            case DocumentType.DOC: return <FileText size={20} />;
+            case DocumentType.WHITEBOARD: return <Layout size={20} />;
+            case DocumentType.KANBAN: return <Kanban size={20} />;
             default: return <FileText size={20} />;
         }
     };
 
-    const getTypeLabel = (type: string) => {
+    const getTypeLabel = (type: DocumentType) => {
         switch (type) {
-            case 'editor': return 'Doc';
-            case 'whiteboard': return 'Whiteboard';
-            case 'kanban': return 'Kanban';
-            default: return 'Doc';
+          case DocumentType.DOC: return "Doc";
+          case DocumentType.WHITEBOARD: return "Whiteboard";
+          case DocumentType.KANBAN: return "Kanban";
         }
-    };
+      };
 
     const getIconColor = (type: string) => {
         switch (type) {
@@ -118,6 +116,7 @@ const Dashboard: React.FC = () => {
                     {documents.map((doc) => (
                         <div
                             key={doc.id}
+                            onClick={() => navigate(`/editor/${doc.id}`)}
                             className="group bg-card rounded-xl border border-border p-5 hover:border-primary/50 transition-all cursor-pointer relative overflow-hidden h-full min-h-[180px] flex flex-col"
                         >
                             <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -126,7 +125,7 @@ const Dashboard: React.FC = () => {
                                 <div className={`p-2 rounded-lg ${getIconColor(doc.type)} transition-colors`}>
                                     {getIcon(doc.type)}
                                 </div>
-                                <span className="text-xs text-muted-foreground font-medium">{doc.date}</span>
+                                <span className="text-xs text-muted-foreground font-medium">{doc.createdAt.split('T')[0]}</span>
                             </div>
 
                             <div className="mt-4">

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { X, FileText, Layout, Kanban, Check } from 'lucide-react';
+import { useDocuments } from '../hooks/useDocuments';
+import { useNavigate } from 'react-router-dom';
+import { DocumentType } from '../types/document';
 
 interface CreateDocumentModalProps {
   isOpen: boolean;
@@ -8,8 +11,15 @@ interface CreateDocumentModalProps {
 
 const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({ isOpen, onClose }) => {
   const [docName, setDocName] = useState('');
-  const [selectedType, setSelectedType] = useState<'editor' | null>('editor');
+  const [selectedType, setSelectedType] = useState<DocumentType>(DocumentType.DOC);
+  const {createNewDocument}=useDocuments()
+  const navigate=useNavigate()
 
+  const handleCreate=async()=>{
+    const newDoc=await createNewDocument(docName,selectedType)
+    onClose()
+    navigate(`/editor/${newDoc.id}`)
+  }
   if (!isOpen) return null;
 
   return (
@@ -58,25 +68,25 @@ const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({ isOpen, onClo
               
               {/* Option 1: Editor (Active) */}
               <div
-                onClick={() => setSelectedType('editor')}
+                onClick={() => setSelectedType(DocumentType.DOC)}
                 className={`relative group p-4 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col items-center text-center gap-3
-                  ${selectedType === 'editor' 
+                  ${selectedType === DocumentType.DOC 
                     ? 'border-primary bg-primary/5 ring-1 ring-primary' // Reduced thickness here (removed shadow, used ring-1)
                     : 'border-border bg-card hover:border-primary/40 hover:bg-secondary/30'
                   }`}
               >
                 {/* Custom Solid Checkmark Badge */}
-                {selectedType === 'editor' && (
+                {selectedType === DocumentType.DOC && (
                   <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center shadow-sm animate-in zoom-in duration-200">
                     <Check size={12} strokeWidth={3} />
                   </div>
                 )}
 
-                <div className={`p-3.5 rounded-lg transition-colors ${selectedType === 'editor' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground group-hover:text-foreground'}`}>
+                <div className={`p-3.5 rounded-lg transition-colors ${selectedType === DocumentType.DOC ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground group-hover:text-foreground'}`}>
                   <FileText size={24} />
                 </div>
                 <div>
-                  <h3 className={`font-semibold transition-colors ${selectedType === 'editor' ? 'text-primary' : 'text-foreground'}`}>Document Editor</h3>
+                  <h3 className={`font-semibold transition-colors ${selectedType === DocumentType.DOC ? 'text-primary' : 'text-foreground'}`}>Document Editor</h3>
                   <p className="text-xs text-muted-foreground mt-1">Rich text document</p>
                 </div>
               </div>
@@ -118,6 +128,7 @@ const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({ isOpen, onClo
             Cancel
           </button>
           <button
+          onClick={handleCreate}
             disabled={!docName.trim()}
             className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
